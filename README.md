@@ -9,14 +9,12 @@
 ## Содержание README (что есть в ноутбуке)
 
 1. Подготовка окружения и установка зависимостей
-2. Загрузка и предварительная обработка данных (clean\_text)
-3. Разметка / кодировка меток (LabelEncoder)
-4. Учёт дисбаланса классов — compute\_class\_weight + кастомный loss
-5. Модель и обучение (Trainer, TrainingArguments)
-6. Оценка качества (precision / recall / weighted F1)
+2. Загрузка и предварительная обработка данных
+3. Авторазметка с помощью LLM (<Qwen/Qwen2-7B-Instruct>)
+4. Аугментация синтетики на основе выданных данных (+чистка)
+5. Бейзлайн + обучение более крупных моделей
+6. Оценка качества (accuracy / precision / recall / weighted F1 / macro F1)
 7. Инференс на тесте + замер времени на пример
-8. Сохранение лучших чекпоинтов
-9. Рекомендации и идеи для улучшения
 
 ---
 
@@ -90,18 +88,23 @@ pip install datasets evaluate scikit-learn pandas torch emoji nbformat
 training_args = TrainingArguments(
     output_dir="./rubert_results",
     eval_strategy="epoch",
-    save_strategy="epoch",
+    save_strategy="no",
     logging_strategy="epoch",
     learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
-    num_train_epochs=15,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    gradient_accumulation_steps=2,
+    num_train_epochs=8,
     weight_decay=0.01,
-    load_best_model_at_end=True,
+    lr_scheduler_type="linear",
+    warmup_ratio=0.1,
+    load_best_model_at_end=False,
     metric_for_best_model="f1_weighted",
     greater_is_better=True,
+    fp16=True,
     push_to_hub=False,
-    report_to="none"
+    report_to="none",
+    seed=42
 )
 ```
 
@@ -142,35 +145,3 @@ print(f"Среднее на 1 пример: {avg_time_per_sample:.4f} сек")
 
 * Лучшие модели сохраняются в папку `./rubert_results/best_model/...` (в ноутбуке показаны разные подпапки для разных loss'ов, например `cross_entropy` и `focal_loss`).
 * Предсказания теста сохраняются в `df_test['label']` (и вы можете сохранить `df_test.to_csv('test_pred.csv', index=False)`).
-
----
-
-## Где смотреть и что поправить (рекомендации)
-
-1. **Упрощение / скриптизация**: вынести ключевые этапы (preprocess, train, eval, infer) в отдельные `.py`-скрипты для удобного запуска вне ноутбука.
-2. **PEFT / LoRA**: ноутбук содержит установки для `peft` и `bitsandbytes`, но основной учебный цикл использует стандартный `Trainer` на Rubert. Для больших LLM (Qwen) рекомендую использовать LoRA/PEFT + 4-bit quantization (bitsandbytes) для экономии памяти и ускорения итераций.
-3. **Data augmentation / pseudo-labeling**: для редких классов можно попробовать синтетическое увеличение или self-training.
-4. **Кросс-валидация / stratified split**: для стабильной оценки weighted F1.
-5. **Оптимизация inference**: пакетирование, TorchScript/ONNX и уменьшение `max_length`/batch size для ускорения. Проверить, укладывается ли среднее время на примере в 5 сек (но ноутбук уже считает среднее время).
-6. **Logging & reproducibility**: зафиксировать seed, сохранить версию зависимостей, добавить small `requirements.txt`.
-
----
-
-## Примерные команды (export / запуск)
-
-* Установить зависимости (см. выше).
-* Запустить ноутбук в Colab / локально.
-
-Если хотите — я могу:
-
-* Сгенерировать `requirements.txt` и `train.py`/`inference.py` на основе ноутбука.
-* Сократить и очистить ноутбук, удалив экспериментальные ячейки и оставив чистую воспроизводимую версию.
-* Подготовить Dockerfile для развёртывания модели и измерения latency.
-
----
-
-## Контакты / заметки
-
-README собран автоматически на основе содержимого `nlp_case_tbank_sirius_final.ipynb`. Если нужно, могу адаптировать README под одну конкретную конфигурацию (например только `DeepPavlov/rubert-base-cased`) и добавить точные команды для запуска (скрипты).
-
-*Конец README*

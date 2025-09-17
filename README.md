@@ -102,7 +102,7 @@ training_args = TrainingArguments(
 
 ## Оценка (метрики)
 
-* Лучшая метрика **Weighted F1** получилась **= 0.74** на валидации 7 эпохи (Модель: `DeepPavlov/rubert-base-cased`; <CrossEntropyLoss with compute_class_weight>)
+* Лучшая метрика **Weighted F1** получилась **= 0.74** на валидации 7 эпохи (Модель: `DeepPavlov/rubert-base-cased`; CrossEntropyLoss with compute_class_weight)
 * Итоговая метрика — **Weighted F1**
 * Также выводятся `accuracy`, `f1_macro`, `precision`, `recall`.
 * Также после каждой тренировки добавлены **Confusion matrix**

@@ -116,6 +116,8 @@ training_args = TrainingArguments(
 
 ```python
 import time
+import numpy as np
+import torch
 start = time.perf_counter()
 predictions = trainer.predict(test_dataset)
 end = time.perf_counter()

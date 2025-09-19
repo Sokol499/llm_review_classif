@@ -1,6 +1,6 @@
 # LLM классификация отзывов
 
-##
+## Просмотр работы
 
 Просмотреть код данного проекта можно посмотреть по ссылке - https://colab.research.google.com/drive/1aPXUGpzWU6N6AcdkTUtGb0E1FqVD_aeV?usp=share_link
 
